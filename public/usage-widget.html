@@ -1,0 +1,339 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>账号用量</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        --bg: #f4f7f6;
+        --panel: rgba(255, 255, 255, 0.92);
+        --text: #10211f;
+        --muted: #61706e;
+        --line: rgba(15, 118, 110, 0.14);
+        --accent: #0f766e;
+        --accent-soft: #ccfbf1;
+        --track: #dce8e5;
+        --danger: #b42318;
+        --shadow: 0 16px 40px rgba(22, 60, 55, 0.09);
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #0d1514;
+          --panel: rgba(21, 32, 30, 0.96);
+          --text: #edf7f5;
+          --muted: #9fb1ae;
+          --line: rgba(94, 234, 212, 0.16);
+          --accent: #5eead4;
+          --accent-soft: rgba(15, 118, 110, 0.26);
+          --track: #2a3b38;
+          --danger: #ff8a80;
+          --shadow: 0 18px 48px rgba(0, 0, 0, 0.25);
+        }
+      }
+
+      * { box-sizing: border-box; }
+      html, body { min-height: 100%; }
+      body {
+        margin: 0;
+        color: var(--text);
+        background:
+          radial-gradient(circle at 100% 0%, rgba(45, 212, 191, 0.12), transparent 34%),
+          var(--bg);
+      }
+      button { font: inherit; }
+      .shell { width: min(760px, 100%); margin: 0 auto; padding: 24px; }
+      header { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 22px; }
+      .brand { display: flex; align-items: center; gap: 12px; min-width: 0; }
+      .mark {
+        width: 42px; height: 42px; flex: 0 0 auto; border-radius: 13px;
+        display: grid; place-items: center; color: white;
+        background: linear-gradient(145deg, #0f766e, #14b8a6);
+        box-shadow: 0 10px 24px rgba(15, 118, 110, 0.23);
+      }
+      .mark svg { width: 24px; height: 24px; }
+      h1 { margin: 0; font-size: 20px; line-height: 1.25; letter-spacing: -0.02em; }
+      .account { margin-top: 4px; color: var(--muted); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .actions { display: flex; gap: 8px; }
+      .button {
+        min-height: 38px; border: 1px solid var(--line); border-radius: 11px;
+        padding: 8px 13px; cursor: pointer; color: var(--text); background: var(--panel);
+        transition: transform .15s ease, border-color .15s ease, opacity .15s ease;
+      }
+      .button:hover { transform: translateY(-1px); border-color: var(--accent); }
+      .button:disabled { cursor: wait; opacity: .55; transform: none; }
+      .button.primary { color: white; border-color: transparent; background: var(--accent); }
+      .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+      .card {
+        min-height: 210px; padding: 19px; border: 1px solid var(--line); border-radius: 18px;
+        background: var(--panel); box-shadow: var(--shadow); backdrop-filter: blur(14px);
+      }
+      .card-head { display: flex; justify-content: space-between; gap: 12px; align-items: center; }
+      .label { color: var(--muted); font-size: 13px; font-weight: 650; }
+      .pill { padding: 4px 8px; border-radius: 999px; color: var(--accent); background: var(--accent-soft); font-size: 11px; }
+      .value { margin-top: 30px; font-size: 48px; line-height: .95; font-weight: 720; letter-spacing: -0.06em; }
+      .value small { margin-left: 4px; color: var(--muted); font-size: 14px; font-weight: 600; letter-spacing: 0; }
+      .bar { height: 8px; margin-top: 24px; overflow: hidden; border-radius: 999px; background: var(--track); }
+      .bar > span { display: block; height: 100%; width: 0; border-radius: inherit; background: linear-gradient(90deg, #14b8a6, var(--accent)); transition: width .45s ease; }
+      .meta { display: flex; justify-content: space-between; gap: 12px; margin-top: 10px; color: var(--muted); font-size: 11px; }
+      .missing { display: grid; place-items: center; min-height: 145px; color: var(--muted); text-align: center; font-size: 13px; line-height: 1.65; }
+      .empty {
+        padding: 38px 24px; border: 1px dashed var(--line); border-radius: 18px;
+        text-align: center; background: var(--panel); box-shadow: var(--shadow);
+      }
+      .empty h2 { margin: 0 0 8px; font-size: 18px; }
+      .empty p { max-width: 440px; margin: 0 auto 20px; color: var(--muted); font-size: 13px; line-height: 1.7; }
+      .foot { display: flex; justify-content: space-between; gap: 12px; margin-top: 14px; color: var(--muted); font-size: 11px; }
+      .error { margin-bottom: 14px; padding: 12px 14px; border-radius: 12px; color: var(--danger); background: color-mix(in srgb, var(--danger) 10%, transparent); font-size: 12px; }
+      .hidden { display: none !important; }
+      @media (max-width: 560px) {
+        .shell { padding: 18px 14px; }
+        header { align-items: flex-start; }
+        .grid { grid-template-columns: 1fr; }
+        .actions .button span { display: none; }
+        .card { min-height: 190px; }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="shell">
+      <header>
+        <div class="brand">
+          <div class="mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M7 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm10-1a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM1.8 20c.5-4.5 2.2-7 5.2-7s4.7 2.5 5.2 7m.6-1c.4-4 1.8-6.5 4.2-6.5 2.5 0 3.8 2.5 4.2 6.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          </div>
+          <div style="min-width:0">
+            <h1>Codex 账号用量</h1>
+            <div id="account" class="account">正在连接本地服务…</div>
+          </div>
+        </div>
+        <div class="actions">
+          <button id="refresh" class="button" type="button" title="刷新"><span>刷新</span> ↻</button>
+          <button id="disconnect" class="button hidden" type="button">断开</button>
+        </div>
+      </header>
+
+      <div id="error" class="error hidden"></div>
+
+      <section id="empty" class="empty hidden">
+        <h2>连接另一个 ChatGPT 账号</h2>
+        <p>登录会在浏览器中完成，认证信息由独立的本地 Codex 配置目录保存。这个面板只读取限额百分比和重置时间。</p>
+        <button id="connect" class="button primary" type="button">连接账号</button>
+      </section>
+
+      <section id="dashboard" class="hidden">
+        <div class="grid">
+          <article class="card" data-quota="fiveHour"></article>
+          <article class="card" data-quota="weekly"></article>
+        </div>
+        <div class="foot">
+          <span>限额由任务复杂度、模型和上下文动态计算</span>
+          <span id="updated"></span>
+        </div>
+      </section>
+    </main>
+
+    <script type="module">
+      const elements = {
+        account: document.querySelector("#account"),
+        refresh: document.querySelector("#refresh"),
+        disconnect: document.querySelector("#disconnect"),
+        connect: document.querySelector("#connect"),
+        empty: document.querySelector("#empty"),
+        dashboard: document.querySelector("#dashboard"),
+        error: document.querySelector("#error"),
+        updated: document.querySelector("#updated"),
+      };
+
+      let rpcId = 0;
+      let snapshot = null;
+      let busy = false;
+      let autoRefreshTimer = null;
+      const pending = new Map();
+
+      function rpcNotify(method, params = {}) {
+        window.parent.postMessage({ jsonrpc: "2.0", method, params }, "*");
+      }
+
+      function rpcRequest(method, params = {}) {
+        return new Promise((resolve, reject) => {
+          const id = ++rpcId;
+          pending.set(id, { resolve, reject });
+          window.parent.postMessage({ jsonrpc: "2.0", id, method, params }, "*");
+        });
+      }
+
+      window.addEventListener("message", (event) => {
+        if (event.source !== window.parent) return;
+        const message = event.data;
+        if (!message || message.jsonrpc !== "2.0") return;
+        if (message.id !== undefined) {
+          const request = pending.get(message.id);
+          if (!request) return;
+          pending.delete(message.id);
+          message.error ? request.reject(message.error) : request.resolve(message.result);
+          return;
+        }
+        if (message.method === "ui/notifications/tool-result") {
+          consumeToolResult(message.params);
+        }
+      }, { passive: true });
+
+      const bridgeReady = (async () => {
+        await rpcRequest("ui/initialize", {
+          appInfo: { name: "multi-account-usage", version: "0.1.0" },
+          appCapabilities: {},
+          protocolVersion: "2026-01-26",
+        });
+        rpcNotify("ui/notifications/initialized");
+      })();
+
+      async function callTool(name) {
+        await bridgeReady;
+        const result = await rpcRequest("tools/call", { name, arguments: {} });
+        consumeToolResult(result);
+        return result;
+      }
+
+      function consumeToolResult(result) {
+        const data = result?.structuredContent;
+        const metadata = result?._meta;
+        if (!data) return;
+        if (data.status === "error") {
+          showError(data.message || "读取用量失败");
+          return;
+        }
+        if (data.status === "login_required" && metadata?.authUrl) {
+          void openLogin(metadata.authUrl);
+          return;
+        }
+        if (data.connection) {
+          snapshot = data;
+          render();
+        }
+      }
+
+      async function openLogin(url) {
+        clearError();
+        try {
+          const result = await rpcRequest("ui/open-link", { url });
+          if (result?.isError) throw new Error("宿主未能打开登录页面");
+          elements.account.textContent = "请在浏览器完成登录，然后点刷新";
+        } catch (error) {
+          if (window.openai?.openExternal) {
+            await window.openai.openExternal({ href: url, redirectUrl: false });
+            elements.account.textContent = "请在浏览器完成登录，然后点刷新";
+          } else {
+            showError(error?.message || "无法打开登录页面");
+          }
+        }
+      }
+
+      function quotaCard(windowData, key) {
+        const label = key === "fiveHour" ? "5 小时用量" : "每周用量";
+        if (!windowData) {
+          const hint = key === "fiveHour"
+            ? "此账号未返回 5 小时窗口。Pro 套餐目前可能没有这一限制。"
+            : "此账号暂未返回每周窗口。";
+          return `<div class="card-head"><span class="label">${label}</span><span class="pill">未提供</span></div><div class="missing">${hint}</div>`;
+        }
+        const used = Math.round(windowData.usedPercent * 10) / 10;
+        const remaining = Math.round(windowData.remainingPercent * 10) / 10;
+        const reset = windowData.resetsAt ? formatTime(windowData.resetsAt) : "未提供";
+        return `
+          <div class="card-head"><span class="label">${label}</span><span class="pill">剩余 ${remaining}%</span></div>
+          <div class="value">${used}<small>% 已用</small></div>
+          <div class="bar" aria-label="已使用 ${used}%"><span style="width:${used}%"></span></div>
+          <div class="meta"><span>0%</span><span>重置 ${reset}</span><span>100%</span></div>`;
+      }
+
+      function formatTime(value) {
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) return "未知";
+        return new Intl.DateTimeFormat("zh-CN", {
+          month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit",
+        }).format(date);
+      }
+
+      function render() {
+        clearError();
+        const connected = snapshot?.connection === "connected";
+        elements.empty.classList.toggle("hidden", connected);
+        elements.dashboard.classList.toggle("hidden", !connected);
+        elements.disconnect.classList.toggle("hidden", !connected);
+        elements.refresh.classList.toggle("hidden", !connected);
+        if (!connected) {
+          stopAutoRefresh();
+          elements.account.textContent = "尚未连接另一个账号";
+          return;
+        }
+        elements.account.textContent = [snapshot.email || "已连接账号", snapshot.planType].filter(Boolean).join(" · ");
+        document.querySelector('[data-quota="fiveHour"]').innerHTML = quotaCard(snapshot.fiveHour, "fiveHour");
+        document.querySelector('[data-quota="weekly"]').innerHTML = quotaCard(snapshot.weekly, "weekly");
+        elements.updated.textContent = `更新 ${formatTime(snapshot.fetchedAt)}`;
+        ensureAutoRefresh();
+      }
+
+      function ensureAutoRefresh() {
+        if (autoRefreshTimer !== null) return;
+        autoRefreshTimer = setInterval(() => {
+          if (busy || snapshot?.connection !== "connected") return;
+          void callTool("refresh_usage").catch((error) => {
+            showError(error?.message || "自动刷新失败，已暂停自动刷新");
+            stopAutoRefresh();
+          });
+        }, 60_000);
+      }
+
+      function stopAutoRefresh() {
+        if (autoRefreshTimer === null) return;
+        clearInterval(autoRefreshTimer);
+        autoRefreshTimer = null;
+      }
+
+      function setBusy(value) {
+        busy = value;
+        elements.refresh.disabled = value;
+        elements.connect.disabled = value;
+        elements.disconnect.disabled = value;
+      }
+
+      function showError(message) {
+        elements.error.textContent = message;
+        elements.error.classList.remove("hidden");
+      }
+      function clearError() {
+        elements.error.textContent = "";
+        elements.error.classList.add("hidden");
+      }
+
+      elements.refresh.addEventListener("click", async () => {
+        if (busy) return;
+        setBusy(true); clearError();
+        try { await callTool("refresh_usage"); }
+        catch (error) { showError(error?.message || "刷新失败"); }
+        finally { setBusy(false); }
+      });
+      elements.connect.addEventListener("click", async () => {
+        if (busy) return;
+        setBusy(true); clearError();
+        try { await callTool("start_login"); }
+        catch (error) { showError(error?.message || "启动登录失败"); }
+        finally { setBusy(false); }
+      });
+      elements.disconnect.addEventListener("click", async () => {
+        if (busy) return;
+        setBusy(true); clearError();
+        try { await callTool("logout_secondary_account"); }
+        catch (error) { showError(error?.message || "断开失败"); }
+        finally { setBusy(false); }
+      });
+
+      try { await callTool("get_usage"); }
+      catch (error) { showError(error?.message || "无法连接本地用量服务"); }
+    </script>
+  </body>
+</html>

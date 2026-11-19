@@ -1,0 +1,38 @@
+{
+  "name": "codex-multi-account-usage",
+  "version": "0.1.0",
+  "description": "Local multi-account Codex usage monitor with a macOS menu bar app.",
+  "private": true,
+  "license": "MIT",
+  "author": "lingfeng1920",
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/lingfeng1920/codex-usage.git"
+  },
+  "bugs": {
+    "url": "https://github.com/lingfeng1920/codex-usage/issues"
+  },
+  "homepage": "https://github.com/lingfeng1920/codex-usage#readme",
+  "type": "module",
+  "engines": {
+    "node": ">=22.6.0"
+  },
+  "scripts": {
+    "clean": "node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\"",
+    "build": "npm run clean && tsc -p tsconfig.build.json",
+    "snapshot": "node dist/src/menu-snapshot.js",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "check": "npm run typecheck && npm run test && npm run build"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/ext-apps": "2.0.4",
+    "@modelcontextprotocol/sdk": "1.32.2",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@types/node": "26.6.6",
+    "typescript": "7.0.2",
+    "vitest": "5.1.1"
+  }
+}

@@ -1,0 +1,16 @@
+node_modules/
+dist/
+coverage/
+.DS_Store
+*.log
+.env
+.env.*
+!.env.example
+auth.json
+config.json
+*.pem
+*.key
+*.p12
+*.mobileprovision
+.codex-secondary/
+.runtime/

@@ -1,0 +1,26 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "multi-account-usage",
+  "version": "0.1.0",
+  "description": "Display a second ChatGPT/Codex account's rolling usage limits in ChatGPT desktop and expose them as a Codex tool.",
+  "author": {
+    "name": "lingfeng1920"
+  },
+  "license": "MIT",
+  "keywords": ["codex", "usage", "quota", "multi-account"],
+  "extensions": {
+    "com.openai": {
+      "interface": {
+        "displayName": "账号用量",
+        "shortDescription": "查看另一账号的 Codex 限额",
+        "longDescription": "在 ChatGPT 桌面端侧边栏查看另一个 ChatGPT/Codex 账号的 5 小时和每周用量百分比、剩余额度及重置时间；在 Codex 中可通过插件工具读取相同数据。所有认证数据仅保存在本机。",
+        "developerName": "lingfeng1920",
+        "category": "Productivity",
+        "capabilities": ["Read usage limits"],
+        "brandColor": "#0F766E",
+        "composerIcon": "./assets/icon.svg",
+        "logo": "./assets/icon.svg"
+      }
+    }
+  }
+}

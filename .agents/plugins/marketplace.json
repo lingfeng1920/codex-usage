@@ -1,0 +1,17 @@
+{
+  "name": "multi-account-local",
+  "plugins": [
+    {
+      "name": "multi-account-usage",
+      "source": {
+        "source": "local",
+        "path": "./.runtime/multi-account-usage"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}
